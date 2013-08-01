@@ -134,6 +134,7 @@ KISSY.add('dom/base/selector', function (S, DOM) {
          * @singleton
          */
         {
+
             _compareNodeOrder: function (a, b) {
                 if (!a.compareDocumentPosition || !b.compareDocumentPosition) {
                     return a.compareDocumentPosition ? -1 : 1;

@@ -39,7 +39,7 @@ KISSY.add('dom/base/style', function (S, DOM, undefined) {
         cssProps = {
             'float': 'cssFloat'
         },
-        defaultDisplay = {},
+        getWindow = {},
         RE_DASH = /-([a-z])/ig;
 
     function upperCase() {
