@@ -1,5 +1,5 @@
 KISSY.add('domlite/base/api', function (S) {
-    var DOMLITE = {};
+    var DOM = {};
     var RE_NUM = /[\-+]?(?:\d*\.|)\d+(?:[eE][\-+]?\d+|)/.source;
     var NodeType = {
         /**
@@ -51,7 +51,7 @@ KISSY.add('domlite/base/api', function (S) {
          */
         'NOTATION_NODE':12
     };
-    DOMLITE = {
+    DOM = {
         NodeType:NodeType,
         _RE_NUM_NO_PX: new RegExp("^(" + RE_NUM + ")(?!px)[a-z%]+$", "i"),
         /**
@@ -71,5 +71,5 @@ KISSY.add('domlite/base/api', function (S) {
                  false;
          },
     };
-    return DOMLITE;
+    return DOM;
 });

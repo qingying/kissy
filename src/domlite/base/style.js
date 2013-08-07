@@ -1,4 +1,4 @@
-KISSY.add('domlite/base/style',function(S,DOMLITE){
+KISSY.add('domlite/base/style',function(S,DOM){
     var WINDOW = S.Env.host;
     var doc = WINDOW.document;
     var R_UPPER = /([A-Z]|^ms)/g;/*ie9 hack*/
@@ -53,7 +53,7 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                     val += DEFAULT_UNIT;
                 }
                 if (val !== undefined) {
-                    // ie Œﬁ–ß÷µ±®¥Ì
+                    // ie Êó†ÊïàÂÄºÊä•Èîô
                     try {
                         // EMPTY will unset style!
                         style[name] = val;
@@ -88,8 +88,8 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
             if (!defaultDisplay[ tagName ]) {
                 body = doc.body;
                 elem = doc.createElement(tagName);
-                DOMLITE.prepend(elem, body);
-                oldDisplay = DOMLITE.css(elem, 'display');
+                DOM.prepend(elem, body);
+                oldDisplay = DOM.css(elem, 'display');
                 body.removeChild(elem);
                 defaultDisplay[ tagName ] = oldDisplay;
             }
@@ -97,7 +97,7 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
         }
 
 
-    S.mix(DOMLITE,
+    S.mix(DOM,
         {
 
             _getComputedStyle: function (elem, name) {
@@ -116,15 +116,15 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                                 val = computedStyle.getPropertyValue(name) || computedStyle[name];
                             }
 
-                            // ªπ√ª”–º”»ÎµΩ document£¨æÕ»°––ƒ⁄
-                            if (val === '' && !DOMLITE.contains(d, elem)) {
+                            // ËøòÊ≤°ÊúâÂä†ÂÖ•Âà∞ documentÔºåÂ∞±ÂèñË°åÂÜÖ
+                            if (val === '' && !DOM.contains(d, elem)) {
                                 name = cssProps[name] || name;
                                 val = elem[STYLE][name];
                             }
 
                             // Safari 5.1 returns percentage for margin
-                            /*ø¥≤ª∂Æ*/
-                            if (DOMLITE._RE_NUM_NO_PX.test(val) && RE_MARGIN.test(name)) {
+                            /*Áúã‰∏çÊáÇ*/
+                            if (DOM._RE_NUM_NO_PX.test(val) && RE_MARGIN.test(name)) {
                                 style = elem.style;
                                 width = style.width;
                                 minWidth = style.minWidth;
@@ -140,8 +140,17 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
 
                             return val;
                         },
+            /**
+            *  Get inline style property from the first element of matched elements
+            *  or
+            *  Set one or more CSS properties for the set of matched elements.
+            *  @param {HTMLElement[]|String|HTMLElement} selector Matched elements
+            *  @param {String|Object} name A CSS property. or A map of property-value pairs to set.
+            *  @param [val] A value to set for the property.
+            *  @return {undefined|String}
+            */
             style: function (selector, name, val) {
-                            var els = DOMLITE.query(selector),
+                            var els = DOM.query(selector),
                                 k,
                                 ret,
                                 elem = els[0], i;
@@ -167,8 +176,17 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                             }
                             return undefined;
                         },
+            /**
+            * Get the computed value of a style property for the first element in the set of matched elements.
+            * or
+            * Set one or more CSS properties for the set of matched elements.
+            * @param {HTMLElement[]|String|HTMLElement} selector ÈÄâÊã©Âô®ÊàñËäÇÁÇπÊàñËäÇÁÇπÊï∞ÁªÑ
+            * @param {String|Object} name A CSS property. or A map of property-value pairs to set.
+            * @param [val] A value to set for the property.
+            * @return {undefined|String}
+            */
             css: function (selector, name, val) {
-                var els = DOMLITE.query(selector),
+                var els = DOM.query(selector),
                                     elem = els[0],
                                     k,
                                     hook,
@@ -190,7 +208,7 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                                     // supports css selector/Node/NodeList
                                     ret = '';
                                     if (elem) {
-                                        ret = DOMLITE._getComputedStyle(elem, name);
+                                        ret = DOM._getComputedStyle(elem, name);
                                     }
                                     return (typeof ret == 'undefined') ? '' : ret;
                                 }
@@ -203,26 +221,34 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                                 return undefined;
             },
 
+            /**
+            * Display the matched elements.
+            * @param {HTMLElement[]|String|HTMLElement} selector Matched elements.
+            */
             show:function(selector){
-                var els = DOMLITE.query(selector),
+                var els = DOM.query(selector),
                     tagName,
                     old,
                     elem, i;
                 for (i = els.length - 1; i >= 0; i--) {
                     elem = els[i];
-                    elem[STYLE][DISPLAY] = DOMLITE.data(elem, OLD_DISPLAY) || EMPTY;
-                    // ø…ƒ‹‘™Àÿªπ¥¶”⁄“˛≤ÿ◊¥Ã¨£¨±»»Á css ¿Ô…Ë÷√¡À display: none
-                    if (DOMLITE.css(elem, DISPLAY) === NONE) {
+                    elem[STYLE][DISPLAY] = DOM.data(elem, OLD_DISPLAY) || EMPTY;
+                    // ÂèØËÉΩÂÖÉÁ¥†ËøòÂ§Ñ‰∫éÈöêËóèÁä∂ÊÄÅÔºåÊØîÂ¶Ç css ÈáåËÆæÁΩÆ‰∫Ü display: none
+                    if (DOM.css(elem, DISPLAY) === NONE) {
                         tagName = elem.tagName.toLowerCase();
                         old = getDefaultDisplay(tagName);
-                        DOMLITE.data(elem, OLD_DISPLAY, old);
+                        DOM.data(elem, OLD_DISPLAY, old);
                         elem[STYLE][DISPLAY] = old;
                     }
                 }
             },
 
+            /**
+            * Hide the matched elements.
+            * @param {HTMLElement[]|String|HTMLElement} selector Matched elements.
+            */
             hide: function (selector) {
-                var els = DOMLITE.query(selector),
+                var els = DOM.query(selector),
                     elem, i;
                 for (i = els.length - 1; i >= 0; i--) {
                     elem = els[i];
@@ -230,25 +256,36 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                         old = style[DISPLAY];
                     if (old !== NONE) {
                         if (old) {
-                            DOMLITE.data(elem, OLD_DISPLAY, old);
+                            DOM.data(elem, OLD_DISPLAY, old);
                         }
                         style[DISPLAY] = NONE;
                     }
                 }
             },
+            /**
+            * Display or hide the matched elements.
+            * @param {HTMLElement[]|String|HTMLElement} selector Matched elements.
+            */
             toggle: function (selector) {
-                           var els = DOMLITE.query(selector),
+                           var els = DOM.query(selector),
                                elem, i;
                            for (i = els.length - 1; i >= 0; i--) {
                                elem = els[i];
-                               if (DOMLITE.css(elem, DISPLAY) === NONE) {
-                                   DOMLITE.show(elem);
+                               if (DOM.css(elem, DISPLAY) === NONE) {
+                                   DOM.show(elem);
                                } else {
-                                   DOMLITE.hide(elem);
+                                   DOM.hide(elem);
                                }
                            }
                        },
 
+            /**
+            * Creates a stylesheet from a text blob of rules.
+            * These rules will be wrapped in a STYLE tag and appended to the HEAD of the document.
+            * @param {window} [refWin=window] Window which will accept this stylesheet
+            * @param {String} [cssText] The text containing the css rules
+            * @param {String} [id] An id to add to the stylesheet for later removal
+            */
             addStyleSheet: function (refWin, cssText, id) {
                 refWin = refWin || WINDOW;
 
@@ -258,25 +295,25 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                     refWin = WINDOW;
                 }
 
-                refWin = DOMLITE.get(refWin);
+                refWin = DOM.get(refWin);
 
-                var win = DOMLITE.getWindow(refWin),
+                var win = DOM.getWindow(refWin),
                     doc = win.document,
                     elem;
 
                 if (id && (id = id.replace('#', EMPTY))) {
-                    elem = DOMLITE.get('#' + id, doc);
+                    elem = DOM.get('#' + id, doc);
                 }
 
-                // ΩˆÃÌº”“ª¥Œ£¨≤ª÷ÿ∏¥ÃÌº”
+                // ‰ªÖÊ∑ªÂä†‰∏ÄÊ¨°Ôºå‰∏çÈáçÂ§çÊ∑ªÂä†
                 if (elem) {
                     return;
                 }
 
-                elem = DOMLITE.create('<style>', { id: id }, doc);
+                elem = DOM.create('<style>', { id: id }, doc);
 
-                // œ»ÃÌº”µΩ DOM  ˜÷–£¨‘Ÿ∏¯ cssText ∏≥÷µ£¨∑Ò‘Ú css hack ª· ß–ß
-                DOMLITE.get('head', doc).appendChild(elem);
+                // ÂÖàÊ∑ªÂä†Âà∞ DOM Ê†ë‰∏≠ÔºåÂÜçÁªô cssText ËµãÂÄºÔºåÂê¶Âàô css hack ‰ºöÂ§±Êïà
+                DOM.get('head', doc).appendChild(elem);
 
                elem.appendChild(doc.createTextNode(cssText));
 
@@ -286,7 +323,7 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
              * @param {HTMLElement[]|String|HTMLElement} selector  Matched elements.
              */
             unselectable: function (selector) {
-                var _els = DOMLITE.query(selector),
+                var _els = DOM.query(selector),
                     elem,
                     j,
                     e,
@@ -395,7 +432,7 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
 
 
       /*
-     µ√µΩ‘™Àÿµƒ¥Û–°–≈œ¢
+     ÂæóÂà∞ÂÖÉÁ¥†ÁöÑÂ§ßÂ∞è‰ø°ÊÅØ
      @param elem
      @param name
      @param {String} [extra]  'padding' : (css width) + padding
@@ -404,9 +441,9 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
      */
     function getWH(elem, name, extra) {
         if (S.isWindow(elem)) {
-            return name == WIDTH ? DOMLITE.viewportWidth(elem) : DOMLITE.viewportHeight(elem);
+            return name == WIDTH ? DOM.viewportWidth(elem) : DOM.viewportHeight(elem);
         } else if (elem.nodeType == 9) {
-            return name == WIDTH ? DOMLITE.docWidth(elem) : DOMLITE.docHeight(elem);
+            return name == WIDTH ? DOM.docWidth(elem) : DOM.docHeight(elem);
         }
         var which = name === WIDTH ? ['Left', 'Right'] : ['Top', 'Bottom'],
             val = name === WIDTH ? elem.offsetWidth : elem.offsetHeight;
@@ -417,11 +454,11 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
                     /*offset = content+padding+border*/
                     if (!extra) {
                         /*content:offset-border-padding*/
-                        val -= parseFloat(DOMLITE.css(elem, 'padding' + w)) || 0;
+                        val -= parseFloat(DOM.css(elem, 'padding' + w)) || 0;
                     }
                     if (extra === 'margin') {
                          /*content+padding+border+margin:offset+margin*/
-                        val += parseFloat(DOMLITE.css(elem, extra + w)) || 0;
+                        val += parseFloat(DOM.css(elem, extra + w)) || 0;
                     } else {
                          /*content+padding:offset-border*/
                         val -= parseFloat(DOM.css(elem, 'border' + w + 'Width')) || 0;
@@ -470,26 +507,26 @@ KISSY.add('domlite/base/style',function(S,DOMLITE){
         }
 
     S.each([WIDTH, HEIGHT], function (name) {
-           /*ucfirst:µ⁄“ª∏ˆ◊÷ƒ∏¥Û–¥*/
-            DOMLITE['inner' + S.ucfirst(name)] = function (selector) {
-                var el = DOMLITE.get(selector);
+           /*ucfirst:Á¨¨‰∏Ä‰∏™Â≠óÊØçÂ§ßÂÜô*/
+            DOM['inner' + S.ucfirst(name)] = function (selector) {
+                var el = DOM.get(selector);
                 return el && getWHIgnoreDisplay(el, name, 'padding');
             };
 
-            DOMLITE['outer' + S.ucfirst(name)] = function (selector, includeMargin) {
-                var el = DOMLITE.get(selector);
+            DOM['outer' + S.ucfirst(name)] = function (selector, includeMargin) {
+                var el = DOM.get(selector);
                 return el && getWHIgnoreDisplay(el, name, includeMargin ? 'margin' : 'border');
             };
 
-            DOMLITE[name] = function (selector, val) {
-                var ret = DOMLITE.css(selector, name, val);
+            DOM[name] = function (selector, val) {
+                var ret = DOM.css(selector, name, val);
                 if (ret) {
                     ret = parseFloat(ret);
                 }
                 return ret;
             };
         });
-    return DOMLITE;
+    return DOM;
 },{
     requiress:['./api']
 })

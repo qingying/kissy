@@ -1,4 +1,4 @@
-KISSY.add('domlite/base/create', function (S, DOMLITE) {
+KISSY.add('domlite/base/create', function (S, DOM) {
     var doc = S.Env.host.document;
     var R_HTML = /<|&#?\w+;/;
     var RE_SIMPLE_TAG = /^<(\w+)\s*\/?>(?:<\/\1>)?$/;
@@ -7,7 +7,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
     var DEFAULT_DIV = doc && doc.createElement(DIV);
     var DIV = 'div';
     var PARENT_NODE = 'parentNode';
-    var NodeType = DOMLITE.nodeType;
+    var NodeType = DOM.nodeType;
     var R_LEADING_WHITESPACE = /^\s+/;
     var creatorsMap = {
                 option: 'select',
@@ -25,20 +25,20 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                 legend: 'fieldset'
             };
 
-     // Ìí¼Ó³ÉÔ±µ½ÔªËØÖĞ
+     // æ·»åŠ æˆå‘˜åˆ°å…ƒç´ ä¸­
     function attachProps(elem, props) {
         if (S.isPlainObject(props)) {
             if (elem.nodeType == NodeType.ELEMENT_NODE) {
-                DOMLITE.attr(elem, props, true);
+                DOM.attr(elem, props, true);
             }
             // document fragment
             else if (elem.nodeType == NodeType.DOCUMENT_FRAGMENT_NODE) {
-                DOMLITE.attr(elem.childNodes, props, true);
+                DOM.attr(elem.childNodes, props, true);
             }
         }
         return elem;
     }
-     // ½« nodeList ×ª»»Îª fragment
+     // å°† nodeList è½¬æ¢ä¸º fragment
     function nodeListToFragment(nodes) {
             var ret = null,
                 i,
@@ -61,7 +61,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
             var frag = ownerDoc && ownerDoc != doc ?
                 ownerDoc.createElement(DIV) :
                 DEFAULT_DIV;
-            // html Îª <style></style> Ê±²»ĞĞ£¬±ØĞëÓĞÆäËûÔªËØ£¿
+            // html ä¸º <style></style> æ—¶ä¸è¡Œï¼Œå¿…é¡»æœ‰å…¶ä»–å…ƒç´ ï¼Ÿ
             frag.innerHTML = '<div>' + html + '<' + '/div>';
             return frag.lastChild;
         }
@@ -71,31 +71,31 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
             if (DOMEvent) {
                 DOMEvent.detach(els);
             }
-            DOMLITE.removeData(els);
+            DOM.removeData(els);
         }
 
     function getElementsByTagName(el, tag) {
             return el.getElementsByTagName(tag);
         }
 
-    // ¿ËÂ¡³ıÁËÊÂ¼şµÄ data
+    // å…‹éš†é™¤äº†äº‹ä»¶çš„ data
     function cloneWithDataAndEvent(src, dest) {
            var DOMEvent = S.require('event/dom'),
                srcData,
                d;
 
-           if (dest.nodeType == NodeType.ELEMENT_NODE && !DOMLITE.hasData(src)) {
+           if (dest.nodeType == NodeType.ELEMENT_NODE && !DOM.hasData(src)) {
                return;
            }
 
-           srcData = DOMLITE.data(src);
+           srcData = DOM.data(src);
 
-           // Ç³¿ËÂ¡£¬data Ò²·ÅÔÚ¿ËÂ¡½ÚµãÉÏ
+           // æµ…å…‹éš†ï¼Œdata ä¹Ÿæ”¾åœ¨å…‹éš†èŠ‚ç‚¹ä¸Š
            for (d in srcData) {
-               DOMLITE.data(dest, d, srcData[d]);
+               DOM.data(dest, d, srcData[d]);
            }
 
-           // ÊÂ¼şÒªÌØÊâµã
+           // äº‹ä»¶è¦ç‰¹æ®Šç‚¹
            if (DOMEvent) {
                // attach src 's event data and dom attached listener to dest
                DOMEvent.clone(src, dest);
@@ -126,7 +126,15 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                 }
             }
         }
-    S.mix(DOMLITE, {
+    S.mix(DOM, {
+
+        /*
+        * Creates DOM elements on the fly from the provided string of raw HTML.
+        * @param {String} html A string of HTML to create on the fly. Note that this parses HTML, not XML.
+        * @param {Object} [props] An map of attributes on the newly-created element.
+        * @param {HTMLDocument} [ownerDoc] A document in which the new elements will be created
+        * @return {DocumentFragment|HTMLElement}
+        */
         create:function (html, props, ownerDoc, _trim) {
             var ret = null;
 
@@ -135,7 +143,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
             }
 
             if (html.nodeType) {
-                return DOMLITE.clone(html);
+                return DOM.clone(html);
             }
 
             if (typeof html != 'string') {
@@ -156,14 +164,14 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                 tag = DIV,
                 k,
                 nodes;
-            /*Èç¹û²»°üº¬html±êÇ©£¬´´½¨Ò»¸öÎÄ±¾½Úµã*/
+            /*å¦‚æœä¸åŒ…å«htmlæ ‡ç­¾ï¼Œåˆ›å»ºä¸€ä¸ªæ–‡æœ¬èŠ‚ç‚¹*/
             if (!R_HTML.test(html)) {
                 ret = context.createTextNode(html);
-            }// ¼òµ¥ tag, ±ÈÈç DOM.create('<p>')
+            }// ç®€å• tag, æ¯”å¦‚ DOM.create('<p>')
             else if ((m = RE_SIMPLE_TAG.exec(html))) {
                 ret = context.createElement(m[1]);
             }
-             // ¸´ÔÓÇé¿ö£¬±ÈÈç DOM.create('<img src='sprite.png' />')
+             // å¤æ‚æƒ…å†µï¼Œæ¯”å¦‚ DOM.create('<img src='sprite.png' />')
                 else {
                     // Fix 'XHTML'-style tags in all browsers
                     html = html.replace(R_XHTML_TAG, '<$1><' + '/$2>');
@@ -179,7 +187,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
 
                     if (nodes.length === 1) {
                         // return single node, breaking parentNode ref from 'fragment'
-                        //removeChild ·µ»ØÒÆ³ıµÄ½Úµã
+                        //removeChild è¿”å›ç§»é™¤çš„èŠ‚ç‚¹
                         ret = nodes[0][PARENT_NODE].removeChild(nodes[0]);
                     } else if (nodes.length) {
                         // return multiple nodes as a fragment
@@ -190,9 +198,17 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                 }
                 return attachProps(ret, props);
         },
+        /**
+        * Get the HTML contents of the first element in the set of matched elements.
+        * or
+        * Set the HTML contents of each element in the set of matched elements.
+        * @param {HTMLElement|String|HTMLElement[]} selector matched elements
+        * @param {String} htmlString  A string of HTML to set as the content of each matched element.
+        * @param {Boolean} [loadScripts=false] True to look for and process scripts
+        */
         html: function (selector, htmlString, loadScripts) {
                         // supports css selector/Node/NodeList
-                        var els = DOMLITE.query(selector),
+                        var els = DOM.query(selector),
                             el = els[0],
                             success = false,
                             valNode,
@@ -221,7 +237,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                                     for (i = els.length - 1; i >= 0; i--) {
                                         elem = els[i];
                                         if (elem.nodeType == NodeType.ELEMENT_NODE) {
-                                            /*½«Ô­À´µÄÄÚÈİÉÏÃæµÄÊÂ¼ş°ó¶¨È¥µô*/
+                                            /*å°†åŸæ¥çš„å†…å®¹ä¸Šé¢çš„äº‹ä»¶ç»‘å®šå»æ‰*/
                                             cleanData(getElementsByTagName(elem, '*'));
                                             elem.innerHTML = htmlString;
                                         }
@@ -235,15 +251,23 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                             }
 
                             if (!success) {
-                                valNode = DOMLITE.create(htmlString, 0, el.ownerDocument, 0);
-                                DOMLITE.empty(els);
-                                DOMLITE.append(valNode, els, loadScripts);
+                                valNode = DOM.create(htmlString, 0, el.ownerDocument, 0);
+                                DOM.empty(els);
+                                DOM.append(valNode, els, loadScripts);
                             }
                         }
                         return undefined;
                     },
+        /**
+        * Get the outerHTML of the first element in the set of matched elements.
+        * or
+        * Set the outerHTML of each element in the set of matched elements.
+        * @param {HTMLElement|String|HTMLElement[]} selector matched elements
+        * @param {String} htmlString  A string of HTML to set as outerHTML of each matched element.
+        * @param {Boolean} [loadScripts=false] True to look for and process scripts
+        */
         outerHTML: function (selector, htmlString, loadScripts) {
-            var els = DOMLITE.query(selector),
+            var els = DOM.query(selector),
                                 holder,
                                 i,
                                 valNode,
@@ -272,13 +296,18 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                                         }
                                     }
                                 } else {
-                                    valNode = DOMLITE.create(htmlString, 0, el.ownerDocument, 0);
-                                    DOMLITE.insertBefore(valNode, els, loadScripts);
-                                    DOMLITE.remove(els);
+                                    valNode = DOM.create(htmlString, 0, el.ownerDocument, 0);
+                                    DOM.insertBefore(valNode, els, loadScripts);
+                                    DOM.remove(els);
                                 }
                             }
                             return undefined;
          },
+        /**
+        * Remove the set of matched elements from the DOM.
+        * @param {HTMLElement|String|HTMLElement[]} selector matched elements
+        * @param {Boolean} [keepData=false] whether keep bound events and jQuery data associated with the elements from removed.
+        */
         remove: function (selector, keepData) {
             var el,
                 els = DOM.query(selector),
@@ -291,7 +320,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                 if (!keepData && el.nodeType == NodeType.ELEMENT_NODE) {
                     all = S.makeArray(getElementsByTagName(el, '*'));
                     all.push(el);
-                    DOMLITE.removeData(all);
+                    DOM.removeData(all);
                     if (DOMEvent) {
                         DOMEvent.detach(all);
                     }
@@ -301,6 +330,25 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                 }
             }
         },
+        /**
+        * Create a deep copy of the first of matched elements.
+        * @param {HTMLElement|String|HTMLElement[]} selector matched elements
+        * @param {Boolean|Object} [deep=false] whether perform deep copy or copy config.
+        * @param {Boolean} [deep.deep] whether perform deep copy
+        * @param {Boolean} [deep.withDataAndEvent=false] A Boolean indicating
+        * whether event handlers and data should be copied along with the elements.
+        * @param {Boolean} [deep.deepWithDataAndEvent=false]
+        * A Boolean indicating whether event handlers and data for all children of the cloned element should be copied.
+        * if set true then deep argument must be set true as well.
+        * @param {Boolean} [withDataAndEvent=false] A Boolean indicating
+        * whether event handlers and data should be copied along with the elements.
+        * @param {Boolean} [deepWithDataAndEvent=false]
+        * A Boolean indicating whether event handlers and data for all children of the cloned element should be copied.
+        * if set true then deep argument must be set true as well.
+        * https://developer.mozilla.org/En/DOM/Node.cloneNode
+        * @return {HTMLElement}
+        * @member KISSY.DOM
+        */
         clone: function (selector, deep, withDataAndEvent, deepWithDataAndEvent) {
                         if (typeof deep === 'object') {
                             deepWithDataAndEvent = deep['deepWithDataAndEvent'];
@@ -308,7 +356,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                             deep = deep['deep'];
                         }
 
-                        var elem = DOMLITE.get(selector),
+                        var elem = DOM.get(selector),
                             clone,
                             elemNodeType;
 
@@ -319,7 +367,7 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                         clone = elem.cloneNode(deep);
 
 
-                        // runtime »ñµÃÊÂ¼şÄ£¿é
+                        // runtime è·å¾—äº‹ä»¶æ¨¡å—
                         if (withDataAndEvent) {
                             cloneWithDataAndEvent(elem, clone);
                             if (deep && deepWithDataAndEvent) {
@@ -329,34 +377,21 @@ KISSY.add('domlite/base/create', function (S, DOMLITE) {
                         return clone;
                     },
         /**
-                    * Remove(include data and event handlers) all child nodes of the set of matched elements from the DOM.
-                    * @param {HTMLElement|String|HTMLElement[]} selector matched elements
-                    */
-                   empty: function (selector) {
-                       var els = DOM.query(selector),
-                           el, i;
-                       for (i = els.length - 1; i >= 0; i--) {
-                           el = els[i];
-                           DOM.remove(el.childNodes);
-                       }
-                   },
-        /**
-                    * Remove(include data and event handlers) all child nodes of the set of matched elements from the DOM.
-                    * @param {HTMLElement|String|HTMLElement[]} selector matched elements
-                    */
-                   empty: function (selector) {
-                       var els = DOMLITE.query(selector),
-                           el, i;
-                       for (i = els.length - 1; i >= 0; i--) {
-                           el = els[i];
-                           DOMLITE.remove(el.childNodes);
-                       }
-                   },
-
+        * Remove(include data and event handlers) all child nodes of the set of matched elements from the DOM.
+        * @param {HTMLElement|String|HTMLElement[]} selector matched elements
+        */
+       empty: function (selector) {
+           var els = DOM.query(selector),
+               el, i;
+           for (i = els.length - 1; i >= 0; i--) {
+               el = els[i];
+               DOM.remove(el.childNodes);
+           }
+       },
                    _nodeListToFragment: nodeListToFragment
     });
 
-    return DOMLITE;
+    return DOM;
 }, {
     requires:['./api']
 })
